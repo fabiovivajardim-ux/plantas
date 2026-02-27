@@ -1,6 +1,9 @@
-import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+// Tenta pegar a chave de diferentes formas para não quebrar o app
+const apiKey = (import.meta.env.VITE_GEMINI_API_KEY) || (process.env.GEMINI_API_KEY) || "";
+
+const ai = new GoogleGenAI({ apiKey });
 
 export interface PlantCareInfo {
   name: string;
@@ -59,7 +62,7 @@ export const identifyPlant = async (base64Image: string): Promise<PlantCareInfo>
   return JSON.parse(response.text || "{}") as PlantCareInfo;
 };
 
-export const getChatResponse = async (message: string, history: { role: "user" | "model"; parts: { text: string }[] }[]) => {
+export const getChatResponse = async (message: string, history: any[]) => {
   const chat = ai.chats.create({
     model: "gemini-3.1-pro-preview",
     config: {
