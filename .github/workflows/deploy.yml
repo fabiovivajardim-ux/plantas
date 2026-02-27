@@ -1,4 +1,3 @@
-# Workflow para deploy de conteúdo estático no GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -23,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 # Corrigido: era actions/checkout
+        uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Corrigido: era node-state
+          node-version: '20'
           cache: 'npm'
       - name: Install dependencies
         run: npm install
