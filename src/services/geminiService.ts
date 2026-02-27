@@ -1,9 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Tenta pegar a chave de diferentes formas para não quebrar o app
-const apiKey = (import.meta.env.VITE_GEMINI_API_KEY) || (process.env.GEMINI_API_KEY) || "";
-
-const ai = new GoogleGenAI({ apiKey });
+const getAIClient = () => {
+  // Tenta pegar a chave de várias fontes
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY) || (process.env.GEMINI_API_KEY) || "";
+  if (!apiKey) {
+    throw new Error("API_KEY_MISSING");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export interface PlantCareInfo {
   name: string;
@@ -18,23 +22,14 @@ export interface PlantCareInfo {
 }
 
 export const identifyPlant = async (base64Image: string): Promise<PlantCareInfo> => {
+  const ai = getAIClient();
   const model = "gemini-3.1-pro-preview";
-  
-  const prompt = `Identify this plant and provide detailed care instructions. 
-  Return the information in a structured JSON format.`;
+  const prompt = `Identify this plant and provide detailed care instructions. Return the information in a structured JSON format.`;
 
   const response = await ai.models.generateContent({
     model,
     contents: {
-      parts: [
-        {
-          inlineData: {
-            mimeType: "image/jpeg",
-            data: base64Image.split(",")[1],
-          },
-        },
-        { text: prompt },
-      ],
+      parts: [{ inlineData: { mimeType: "image/jpeg", data: base64Image.split(",")[1] } }, { text: prompt }],
     },
     config: {
       responseMimeType: "application/json",
@@ -48,10 +43,7 @@ export const identifyPlant = async (base64Image: string): Promise<PlantCareInfo>
           sunlight: { type: Type.STRING },
           soil: { type: Type.STRING },
           temperature: { type: Type.STRING },
-          commonIssues: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-          },
+          commonIssues: { type: Type.ARRAY, items: { type: Type.STRING } },
           funFact: { type: Type.STRING },
         },
         required: ["name", "scientificName", "description", "watering", "sunlight", "soil", "temperature", "commonIssues", "funFact"],
@@ -63,14 +55,14 @@ export const identifyPlant = async (base64Image: string): Promise<PlantCareInfo>
 };
 
 export const getChatResponse = async (message: string, history: any[]) => {
+  const ai = getAIClient();
   const chat = ai.chats.create({
     model: "gemini-3.1-pro-preview",
     config: {
-      systemInstruction: "You are an expert botanist and gardening assistant named Flora. You provide helpful, accurate, and friendly advice about plant care, pest control, and landscaping. Keep your answers concise but informative.",
+      systemInstruction: "You are an expert botanist and gardening assistant named Flora.",
     },
     history,
   });
-
   const response = await chat.sendMessage({ message });
   return response.text;
 };
