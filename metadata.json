@@ -1,0 +1,5 @@
+{
+  "name": "FloraCare AI",
+  "description": "Your intelligent gardening companion for plant identification and expert care advice.",
+  "requestFramePermissions": ["camera"]
+}
