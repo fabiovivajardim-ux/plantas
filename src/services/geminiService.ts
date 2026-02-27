@@ -1,11 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 const getAIClient = () => {
-  // Tenta pegar a chave de várias fontes
-  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY) || (process.env.GEMINI_API_KEY) || "";
-  if (!apiKey) {
-    throw new Error("API_KEY_MISSING");
-  }
+  const apiKey = localStorage.getItem('flora_api_key') || import.meta.env.VITE_GEMINI_API_KEY || "";
+  if (!apiKey) throw new Error("API_KEY_MISSING");
   return new GoogleGenAI({ apiKey });
 };
 
@@ -24,7 +21,7 @@ export interface PlantCareInfo {
 export const identifyPlant = async (base64Image: string): Promise<PlantCareInfo> => {
   const ai = getAIClient();
   const model = "gemini-3.1-pro-preview";
-  const prompt = `Identify this plant and provide detailed care instructions. Return the information in a structured JSON format.`;
+  const prompt = `Identify this plant and provide detailed care instructions. Return in JSON format.`;
 
   const response = await ai.models.generateContent({
     model,
@@ -58,9 +55,7 @@ export const getChatResponse = async (message: string, history: any[]) => {
   const ai = getAIClient();
   const chat = ai.chats.create({
     model: "gemini-3.1-pro-preview",
-    config: {
-      systemInstruction: "You are an expert botanist and gardening assistant named Flora.",
-    },
+    config: { systemInstruction: "You are Flora, a gardening expert." },
     history,
   });
   const response = await chat.sendMessage({ message });
